@@ -9,6 +9,7 @@ module.exports.setRouter = (app) => {
     let baseUrl = `${appConfig.apiVersion}/meetings`;
 
     app.get(`${baseUrl}/day/:meetingDay`, meetingController.getAllMeetingsOnADay);
+    app.get(`${baseUrl}/month/:month`, meetingController.getAllMeetingsInAMonth);
     app.post(`${baseUrl}/create`, meetingController.createMeeting);
     app.get(`${baseUrl}/meeting/:meetingId`, meetingController.getSingleMeeting);
     app.post(`${baseUrl}/delete/:meetingId`, meetingController.deleteMeeting);

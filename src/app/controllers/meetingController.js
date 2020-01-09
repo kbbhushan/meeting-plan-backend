@@ -32,6 +32,28 @@ let getAllMeetingsOnADay = (req, res) => {
         })
 }// end get all Meetings On A Day
 
+let getAllMeetingsInAMonth = (req, res) => {
+    let month = req.params.month;
+    MeetingModel.find({'meetingDay' : new RegExp(month)})
+        .select(' -__v -_id')
+        .lean()
+        .exec((err, result) => {
+            if (err) {
+                console.log(err)
+                logger.error(err.message, 'Meeting Controller: getAllMeetingsInAMonth', 10)
+                let apiResponse = response.generate(true, 'Failed To Find Meeting Details', 500, null)
+                res.send(apiResponse)
+            } else if (check.isEmpty(result)) {
+                logger.info('No Meetings Found in this month', 'Meeting Controller: getAllMeetingsInAMonth')
+                let apiResponse = response.generate(true, 'No Meetings Found', 200, null)
+                res.send(apiResponse)
+            } else {
+                let apiResponse = response.generate(false, 'All Meetings Details Found', 200, result)
+                res.send(apiResponse)
+            }
+        })
+}// end get all Meetings On A Day
+
 
 let createMeeting = (req, res) => {
 
@@ -146,7 +168,8 @@ module.exports = {
     getAllMeetingsOnADay: getAllMeetingsOnADay,
     getSingleMeeting : getSingleMeeting,
     deleteMeeting : deleteMeeting,
-    editMeeting : editMeeting
+    editMeeting : editMeeting,
+    getAllMeetingsInAMonth:getAllMeetingsInAMonth
    
 
 }// end exports
