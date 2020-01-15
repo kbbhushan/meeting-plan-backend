@@ -19,8 +19,6 @@ const redisLib = require("./redisLib.js");
 
 let setServer = (server) => {
 
-    //let allOnlineUsers = []
-
     let io = socketio.listen(server);
 
     let myIo = io.of('/')
@@ -30,9 +28,7 @@ let setServer = (server) => {
         console.log("on connection--emitting verify user");
 
         socket.emit("verifyUser", "");
-
-        // code to verify the user and make him online
-
+        
         socket.on('set-user', (authToken) => {
 
             console.log("set-user called")
@@ -64,7 +60,7 @@ let setServer = (server) => {
 
                                     console.log(`${fullName} is online`);
                                     // setting room name
-                                    socket.room = 'edChat'
+                                    socket.room = 'meetingRoom'
                                     // joining chat-group room.
                                     socket.join(socket.room)
                                     socket.to(socket.room).broadcast.emit('online-user-list', result);
