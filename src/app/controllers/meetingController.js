@@ -80,12 +80,12 @@ let createMeeting = (req, res) => {
                                 let apiResponse = response.generate(true, 'Failed to create new Meeting', 500, null)
                                 reject(apiResponse)
                             } else {
-                                socket.emitMeetingUpdate();
+                                socket.emitMeetingUpdate('A meeting is created by Admin');
                                 setTimeout(()=>{
                                     email.sendEmail(`Hi,
                                     New Meeting is created on ${req.body.meetingDay} from ${req.body.startTime} to ${req.body.endTime}.
                                     Thanks,
-                                    MeetinPlanner.
+                                    Meeting Planner.
                                     `);
                                 }, 1000)
                                 let newMeetingObj = newMeeting.toObject();
@@ -145,6 +145,14 @@ let deleteMeeting= (req, res) => {
             res.send(apiResponse)
         } else {
             let apiResponse = response.generate(false, 'Deleted the meeting successfully', 200, result)
+            socket.emitMeetingUpdate('A meeting is deleted by Admin');
+                                setTimeout(()=>{
+                                    email.sendEmail(`Hi,
+                                    A meeting is deleted by Admin.
+                                    Thanks,
+                                    Meeting Planner.
+                                    `);
+                                }, 1000)
             res.send(apiResponse)
         }
     });// end meeting find and remove
@@ -166,6 +174,14 @@ let editMeeting = (req, res) => {
             res.send(apiResponse)
         } else {
             let apiResponse = response.generate(false, 'Meeting details edited', 200, result)
+            socket.emitMeetingUpdate('A meeting is changed by Admin');
+                                setTimeout(()=>{
+                                    email.sendEmail(`Hi,
+                                    A meeting is changed by Admin.
+                                    Thanks,
+                                    Meeting Planner.
+                                    `);
+                                }, 1000)
             res.send(apiResponse)
         }
     });// end meeting model update

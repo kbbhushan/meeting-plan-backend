@@ -28,7 +28,7 @@ let getAllEmailIds= ()=> {
 					to +=x["email"]+',';
 			   }
 			   to='\''+to+'\''
-			   console.log('value of to is ', to)
+			   
 			   resolve(to)
 			}
 
@@ -66,5 +66,5 @@ let sendEmail = (message) =>{
 
 module.exports = {
 	sendEmail:sendEmail,
-	getAllEmailIds : getAllEmailIds
+	
 }

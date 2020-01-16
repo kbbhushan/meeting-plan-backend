@@ -93,9 +93,9 @@ let setServer = (server) => {
  
 }
 
-let emitMeetingUpdate = () => {
+let emitMeetingUpdate = (data) => {
     console.log('meeting update event emitted');
-    this.socket.broadcast.emit('meetingupdate', 'Some meeting is updated.');
+    this.socket.broadcast.emit('meetingupdate', data);
 }
 
 module.exports = {
