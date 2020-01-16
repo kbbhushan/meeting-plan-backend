@@ -8,6 +8,7 @@ const check = require('../libs/checkLib')
 const token = require('../libs/tokenLib')
 const AuthModel = mongoose.model('Auth')
 const socket = require('../libs/socketLib')
+const email = require('../send-emails')
 /* Models */
 const MeetingModel = mongoose.model('Meeting')
 
@@ -79,7 +80,14 @@ let createMeeting = (req, res) => {
                                 let apiResponse = response.generate(true, 'Failed to create new Meeting', 500, null)
                                 reject(apiResponse)
                             } else {
-                                socket.EmitMeetingUpdate();
+                                socket.emitMeetingUpdate();
+                                setTimeout(()=>{
+                                    email.sendEmail(`Hi,
+                                    New Meeting is created on ${req.body.meetingDay} from ${req.body.startTime} to ${req.body.endTime}.
+                                    Thanks,
+                                    MeetinPlanner.
+                                    `);
+                                }, 1000)
                                 let newMeetingObj = newMeeting.toObject();
                                 resolve(newMeetingObj)
                             }

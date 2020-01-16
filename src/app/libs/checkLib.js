@@ -1,4 +1,4 @@
-'use srict'
+'use strict'
 
 let trim = (x) => {
   let value = String(x)

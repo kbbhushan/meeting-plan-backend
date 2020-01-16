@@ -93,12 +93,12 @@ let setServer = (server) => {
  
 }
 
-let EmitMeetingUpdate = () => {
+let emitMeetingUpdate = () => {
     console.log('meeting update event emitted');
     this.socket.broadcast.emit('meetingupdate', 'Some meeting is updated.');
 }
 
 module.exports = {
     setServer: setServer,
-    EmitMeetingUpdate:EmitMeetingUpdate
+    emitMeetingUpdate:emitMeetingUpdate
 }
