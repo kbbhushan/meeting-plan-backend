@@ -12,6 +12,11 @@ let userSchema = new Schema({
     index: true,
     unique: true
   },
+  userName: {
+    type: String,
+    unique: true,
+    required:true
+  },
   firstName: {
     type: String,
     default: ''
@@ -22,7 +27,7 @@ let userSchema = new Schema({
   },
   password: {
     type: String,
-    default: 'passskdajakdjkadsj'
+    default: 'mquxd09$!@fruns'
   },
   email: {
     type: String,

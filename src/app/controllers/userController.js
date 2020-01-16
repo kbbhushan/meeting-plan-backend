@@ -58,53 +58,6 @@ let getSingleUser = (req, res) => {
 }// end get single user
 
 
-
-let deleteUser = (req, res) => {
-
-    UserModel.findOneAndRemove({ 'userId': req.params.userId }).exec((err, result) => {
-        if (err) {
-            console.log(err)
-            logger.error(err.message, 'User Controller: deleteUser', 10)
-            let apiResponse = response.generate(true, 'Failed To delete user', 500, null)
-            res.send(apiResponse)
-        } else if (check.isEmpty(result)) {
-            logger.info('No User Found', 'User Controller: deleteUser')
-            let apiResponse = response.generate(true, 'No User Found', 404, null)
-            res.send(apiResponse)
-        } else {
-            let apiResponse = response.generate(false, 'Deleted the user successfully', 200, result)
-            res.send(apiResponse)
-        }
-    });// end user model find and remove
-
-
-}// end delete user
-
-let editUser = (req, res) => {
-
-    let options = req.body;
-    UserModel.update({ 'userId': req.params.userId }, options).exec((err, result) => {
-        if (err) {
-            console.log(err)
-            logger.error(err.message, 'User Controller:editUser', 10)
-            let apiResponse = response.generate(true, 'Failed To edit user details', 500, null)
-            res.send(apiResponse)
-        } else if (check.isEmpty(result)) {
-            logger.info('No User Found', 'User Controller: editUser')
-            let apiResponse = response.generate(true, 'No User Found', 404, null)
-            res.send(apiResponse)
-        } else {
-            let apiResponse = response.generate(false, 'User details edited', 200, result)
-            res.send(apiResponse)
-        }
-    });// end user model update
-
-
-}// end edit user
-
-
-// start user signup function 
-
 let signUpFunction = (req, res) => {
 
     let validateUserInput = () => {
@@ -127,8 +80,9 @@ let signUpFunction = (req, res) => {
         })
     }// end validate user input
     let createUser = () => {
+        console.log('In create user fn',req.body);
         return new Promise((resolve, reject) => {
-            UserModel.findOne({ email: req.body.email })
+            UserModel.findOne({ userName: req.body.userName })
                 .exec((err, retrievedUserDetails) => {
                     if (err) {
                         logger.error(err.message, 'userController: createUser', 10)
@@ -138,6 +92,7 @@ let signUpFunction = (req, res) => {
                         console.log(req.body)
                         let newUser = new UserModel({
                             userId: shortid.generate(),
+                            userName: req.body.userName.toLowerCase(),
                             firstName: req.body.firstName,
                             lastName: req.body.lastName || '',
                             email: req.body.email.toLowerCase(),
@@ -158,7 +113,7 @@ let signUpFunction = (req, res) => {
                         })
                     } else {
                         logger.error('User Cannot Be Created.User Already Present', 'userController: createUser', 4)
-                        let apiResponse = response.generate(true, 'User Already Present With this Email', 403, null)
+                        let apiResponse = response.generate(true, 'User Already Present With this UserName', 403, null)
                         reject(apiResponse)
                     }
                 })
@@ -185,10 +140,10 @@ let loginFunction = (req, res) => {
     let findUser = () => {
         console.log("findUser");
         return new Promise((resolve, reject) => {
-            if (req.body.email) {
-                console.log("req body email is there");
+            if (req.body.userName) {
+                console.log("req body userName is there");
                 console.log(req.body);
-                UserModel.findOne({ email: req.body.email}, (err, userDetails) => {
+                UserModel.findOne({ userName: req.body.userName}, (err, userDetails) => {
                     /* handle the error here if the User is not found */
                     if (err) {
                         console.log(err)
@@ -357,8 +312,6 @@ module.exports = {
 
     signUpFunction: signUpFunction,
     getAllUser: getAllUser,
-    editUser: editUser,
-    deleteUser: deleteUser,
     getSingleUser: getSingleUser,
     loginFunction: loginFunction,
     logout: logout
