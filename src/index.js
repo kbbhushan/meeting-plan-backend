@@ -79,6 +79,7 @@ const socketLib = require("./app/libs/socketLib");
 const socketServer = socketLib.setServer(server);
 
 
+
 // end socketio connection handler
 
 /**
@@ -154,4 +155,7 @@ mongoose.connection.on('open', function (err) {
 }); // end mongoose connection open handler
 
 
-module.exports = app;
+module.exports = {
+
+  server : server
+};

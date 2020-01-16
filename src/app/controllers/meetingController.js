@@ -7,7 +7,7 @@ const validateInput = require('../libs/paramsValidationLib')
 const check = require('../libs/checkLib')
 const token = require('../libs/tokenLib')
 const AuthModel = mongoose.model('Auth')
-
+const socket = require('../libs/socketLib')
 /* Models */
 const MeetingModel = mongoose.model('Meeting')
 
@@ -79,6 +79,7 @@ let createMeeting = (req, res) => {
                                 let apiResponse = response.generate(true, 'Failed to create new Meeting', 500, null)
                                 reject(apiResponse)
                             } else {
+                                socket.EmitMeetingUpdate();
                                 let newMeetingObj = newMeeting.toObject();
                                 resolve(newMeetingObj)
                             }

@@ -15,16 +15,15 @@ const response = require('./responseLib')
 
 const redisLib = require("./redisLib.js");
 
-
+    let io =null;
+    let socket = null;
+    let myIo =null;
 
 let setServer = (server) => {
-
-    let io = socketio.listen(server);
-
-    let myIo = io.of('/')
-
+    io = socketio.listen(server);
+    myIo = io.of('/')
     myIo.on('connection', (socket) => {
-
+        this.socket = socket;
         console.log("on connection--emitting verify user");
 
         socket.emit("verifyUser", "");
@@ -51,23 +50,7 @@ let setServer = (server) => {
                             console.log(`some error occurred`)
                         } else {
                             // getting online users list.
-
-                            redisLib.getAllUsersInAHash('onlineUsers', (err, result) => {
-                                console.log(`--- inside getAllUsersInAHas function ---`)
-                                if (err) {
-                                    console.log(err)
-                                } else {
-
-                                    console.log(`${fullName} is online`);
-                                    // setting room name
-                                    socket.room = 'meetingRoom'
-                                    // joining chat-group room.
-                                    socket.join(socket.room)
-                                    socket.to(socket.room).broadcast.emit('online-user-list', result);
-
-
-                                }
-                            })
+                            console.log(`${value} added to online user list`);
                         }
                     })
                 }
@@ -107,9 +90,15 @@ let setServer = (server) => {
 
 
     });
+ 
+}
 
+let EmitMeetingUpdate = () => {
+    console.log('meeting update event emitted');
+    this.socket.broadcast.emit('meetingupdate', 'Some meeting is updated.');
 }
 
 module.exports = {
-    setServer: setServer
+    setServer: setServer,
+    EmitMeetingUpdate:EmitMeetingUpdate
 }
