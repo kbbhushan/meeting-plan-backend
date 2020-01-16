@@ -10,7 +10,7 @@ const check = require('./../libs/checkLib')
 
 let isAuthorized = (req, res, next) => {
   
-
+  console.log('isAuthorized called')
   if (req.params.authToken || req.query.authToken || req.body.authToken || req.header('authToken')) {
     Auth.findOne({authToken: req.header('authToken') || req.params.authToken || req.body.authToken || req.query.authToken}, (err, authDetails) => {
       if (err) {
@@ -32,7 +32,9 @@ let isAuthorized = (req, res, next) => {
             }
             else{
                 
-                req.user = {userId: decoded.data.userId}
+                req.user = {userId: decoded.data.userId,
+                userName:decoded.data.userName}
+                console.log('decoded data in auth js',decoded)
                 next()
             }
 

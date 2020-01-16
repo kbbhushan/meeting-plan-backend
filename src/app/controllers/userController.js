@@ -15,6 +15,12 @@ const UserModel = mongoose.model('User')
 
 /* Get all user Details */
 let getAllUser = (req, res) => {
+    if(!(/.*-admin$/.test(req.user.userName))){
+        logger.info('UnAuthorised Access', 'User Controller: getAllUser')
+        let apiResponse = response.generate(true, 'UnAuthorised Access', 500, null)
+        res.send(apiResponse)
+    }
+    else{
     UserModel.find()
         .select(' -__v -_id')
         .lean()
@@ -33,6 +39,7 @@ let getAllUser = (req, res) => {
                 res.send(apiResponse)
             }
         })
+    }
 }// end get all users
 
 /* Get single user details */
