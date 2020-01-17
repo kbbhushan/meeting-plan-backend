@@ -39,6 +39,7 @@ let getAllUser = (req, res) => {
                         let apiResponse = response.generate(false, 'No Users Signed Up', 404, null)
                         reject(apiResponse)
                     } else {
+                        let apiResponse = response.generate(false, 'All users found', 200, result)
                         resolve(apiResponse)
                     }
                 })
