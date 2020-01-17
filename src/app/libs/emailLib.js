@@ -17,7 +17,7 @@ let mailOptions={
 
 let sendEmail = (to , message) =>{
 	console.log('Inside sendEmail function')
-	mailOptions["text"] = message;
+	mailOptions["html"] = message;
 	mailOptions["to"]=to
 	transporter.sendMail(mailOptions, function (error, info){
 

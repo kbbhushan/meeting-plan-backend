@@ -16,31 +16,42 @@ const UserModel = mongoose.model('User')
 
 /* Get all user Details */
 let getAllUser = (req, res) => {
-    if(!(/.*-admin$/.test(req.user.userName))){
-        logger.info('UnAuthorised Access', 'User Controller: getAllUser')
-        let apiResponse = response.generate(true, 'UnAuthorised Access', 500, null)
-        res.send(apiResponse)
-    }
-    else{
-    UserModel.find()
-        .select(' -__v -_id')
-        .lean()
-        .exec((err, result) => {
-            if (err) {
-                console.log(err)
-                logger.error(err.message, 'User Controller: getAllUser', 10)
-                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-                res.send(apiResponse)
-            } else if (check.isEmpty(result)) {
-                logger.info('No User Found', 'User Controller: getAllUser')
-                let apiResponse = response.generate(true, 'No User Found', 404, null)
-                res.send(apiResponse)
-            } else {
-                let apiResponse = response.generate(false, 'All User Details Found', 200, result)
-                res.send(apiResponse)
+
+    let getAllUser = () => {
+        return new Promise ((resolve, reject )=>{
+            if(!(/.*-admin$/.test(req.user.userName))){
+                logger.info('UnAuthorised Access', 'User Controller: getAllUser')
+                let apiResponse = response.generate(true, 'UnAuthorised Access', 500, null)
+                reject(apiResponse)
             }
-        })
+            else{
+            UserModel.find()
+                .select(' -__v -_id')
+                .lean()
+                .exec((err, result) => {
+                    if (err) {
+                        console.log(err)
+                        logger.error(err.message, 'User Controller: getAllUser', 10)
+                        let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
+                        res.send(apiResponse)
+                    } else if (check.isEmpty(result)) {
+                        logger.info('No User Found', 'User Controller: getAllUser')
+                        let apiResponse = response.generate(false, 'No Users Signed Up', 404, null)
+                        reject(apiResponse)
+                    } else {
+                        resolve(apiResponse)
+                    }
+                })
+            }
+
+        })//end of Promise
     }
+
+    getAllUser(req, res).then((apiResponse)=>{
+                        res.send(apiResponse)
+                })
+                .catch(err=>{res.send(err)})
+    
 }// end get all users
 
 /* Get single user details */
@@ -422,11 +433,12 @@ let resetPassword = (req, res) => {
         .then((resolve) => {
             console.log('details at line no - 424',resolve)
             //send email to the user with the reset link
-            let emailMessage = `Dear ${resolve.userDetails.firstName},
-            Please follow below link to reset your password.
-            <a href= "http://localhost:4200/reset/${resolve.userDetails.userId}/${resolve.authToken}"> Password Reset</a>
-            Thanks,
-            Meeting Planner.`
+            let emailMessage = `<p>Dear ${resolve.userDetails.firstName},</p><br>
+            <p>Please click on below link to reset your password.</p><br>
+            <a href= "http://localhost:4200/reset/${resolve.userDetails.userId}/${resolve.authToken}">Reset Password</a>
+            <br>
+            <p>Thanks,</p>
+            <p>Meeting Planner.</p>`
             emailLib.sendEmail(`${resolve.userDetails.email}`,emailMessage)
             let apiResponse = response.generate(false, 'Email Sent Successfully', 200, resolve)
             
@@ -540,20 +552,33 @@ let updatePassword = (req, res) => {
  * auth params: userId.
  */
 let logout = (req, res) => {
-  AuthModel.findOneAndRemove({userId: req.user.userId}, (err, result) => {
-    if (err) {
-        console.log(err)
-        logger.error(err.message, 'user Controller: logout', 10)
-        let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+
+    let logout =() => {
+        return new Promise ((resolve, reject)=>{
+            AuthModel.findOneAndRemove({userId: req.user.userId}, (err, result) => {
+                if (err) {
+                    
+                    logger.error(err.message, 'user Controller: logout', 10)
+                    let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+                    reject(apiResponse)
+                } else if (check.isEmpty(result)) {
+                    let apiResponse = response.generate(true, 'Already Logged Out or Invalid UserId', 404, null)
+                    resolve(apiResponse)
+                } else {
+                    let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
+                    resolve(apiResponse)
+                }
+              })
+        })//end of Promise
+    }//end of logout local
+
+    logout(req, res).then((apiResponse)=>{
         res.send(apiResponse)
-    } else if (check.isEmpty(result)) {
-        let apiResponse = response.generate(true, 'Already Logged Out or Invalid UserId', 404, null)
-        res.send(apiResponse)
-    } else {
-        let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
-        res.send(apiResponse)
-    }
-  })
+    }).catch((err)=>{
+        
+        res.send(err)
+    })
+  
 } // end of the logout function.
 
 
