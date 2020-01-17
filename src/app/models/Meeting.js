@@ -12,23 +12,19 @@ let meetingSchema = new Schema({
         index: true,
         unique: true
       },
-  meetingTime: {
-    type: String,
-    default: '',
-  },
   meetingDay: {
     type: String,
     default: ''
   },
   startTime: {
-    type: Number,
+    type: String,
     default: ''
   },
   endTime: {
-    type: Number,
+    type: String,
     default: ''
   },
-  where: {
+  location: {
     type: String,
     default: 'Conference Room'
   },
