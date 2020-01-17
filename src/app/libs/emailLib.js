@@ -11,18 +11,27 @@ let transporter = nodemailer.createTransport({
 let mailOptions={
 
 	from :'meetingplannerkbb@gmail.com',
-	subject:'Hi',
-	text:`Testing NodeMailer`
+	subject:'Password Reset',
+	
 };
 
-transporter.sendMail(mailOptions, function (error, info){
+let sendEmail = (to , message) =>{
+	console.log('Inside sendEmail function')
+	mailOptions["text"] = message;
+	mailOptions["to"]=to
+	transporter.sendMail(mailOptions, function (error, info){
 
-	if(error){
-    	console.log(error);
-	}
-	else{
-		console.log('Email Sent: '+ info.response);
-	}
-});
+		if(error){
+			console.log(error);
+		} 
+		else{
+			console.log('Email Sent: '+ info.response);
+		}
+	});
+	
+	
+} // end of sendEmail
 
-
+module.exports = {
+	sendEmail : sendEmail
+}

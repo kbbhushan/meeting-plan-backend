@@ -17,7 +17,6 @@ module.exports.setRouter = (app) => {
     app.post(`${baseUrl}/meetings/delete/:meetingId`,auth.isAuthorized, meetingController.deleteMeeting);
     app.put(`${baseUrl}/meetings/edit/:meetingId`,auth.isAuthorized, meetingController.editMeeting);
     
-    app.get(`${baseUrl}/users/userslist`,auth.isAuthorized, userController.getAllUser );
-    app.get(`${baseUrl}/users/password-reset`, userController.resetPassword );
+   
 
 }

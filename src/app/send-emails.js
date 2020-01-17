@@ -62,7 +62,7 @@ let sendEmail = (message) =>{
 	});
 	});
 	
-}
+} // end of sendEmail
 
 module.exports = {
 	sendEmail:sendEmail,

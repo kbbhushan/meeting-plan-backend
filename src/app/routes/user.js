@@ -47,4 +47,7 @@ module.exports.setRouter = (app) => {
 
     app.post(`${baseUrl}/logout`, auth.isAuthorized, userController.logout);
 
+    app.get(`${baseUrl}/userslist`,auth.isAuthorized, userController.getAllUser );
+    app.post(`${baseUrl}/password-reset`, userController.resetPassword );
+
 }

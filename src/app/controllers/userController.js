@@ -8,6 +8,7 @@ const validateInput = require('../libs/paramsValidationLib')
 const check = require('../libs/checkLib')
 const token = require('../libs/tokenLib')
 const AuthModel = mongoose.model('Auth')
+const emailLib = require('../libs/emailLib')
 
 /* Models */
 const UserModel = mongoose.model('User')
@@ -328,7 +329,7 @@ let resetPassword = (req, res) => {
 
     let removeAuthToken = (userDetails) => {
         return new Promise((resolve, reject) => {
-        AuthModel.findOneAndRemove({userId: req.user.userId}, (err, result) => {
+        AuthModel.findOneAndRemove({userId: userDetails.userId}, (err, result) => {
             if (err) {
                 console.log(err)
                 logger.error(err.message, 'user Controller: logout', 10)
@@ -345,7 +346,100 @@ let resetPassword = (req, res) => {
         })//end of Promise
 
     }//end of removeAuthToken
-    res.send();
+    
+    let generateToken = (userDetails) => {
+        console.log("generate token");
+        return new Promise((resolve, reject) => {
+            token.generateToken(userDetails, (err, tokenDetails) => {
+                if (err) {
+                    console.log(err)
+                    let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
+                    reject(apiResponse)
+                } else {
+                    tokenDetails.userId = userDetails.userId
+                    tokenDetails.userDetails = userDetails
+                    resolve(tokenDetails)
+                }
+            })
+        })
+    }//end of generate Token
+
+    let saveToken = (tokenDetails) => {
+        console.log("save token");
+        return new Promise((resolve, reject) => {
+            AuthModel.findOne({ userId: tokenDetails.userId }, (err, retrievedTokenDetails) => {
+                if (err) {
+                    console.log(err.message, 'userController: saveToken', 10)
+                    let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
+                    reject(apiResponse)
+                } else if (check.isEmpty(retrievedTokenDetails)) {
+                    let newAuthToken = new AuthModel({
+                        userId: tokenDetails.userId,
+                        authToken: tokenDetails.token,
+                        tokenSecret: tokenDetails.tokenSecret,
+                        tokenGenerationTime: time.now()
+                    })
+                    newAuthToken.save((err, newTokenDetails) => {
+                        if (err) {
+                            console.log(err)
+                            logger.error(err.message, 'userController: saveToken', 10)
+                            let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
+                            reject(apiResponse)
+                        } else {
+                            let responseBody = {
+                                authToken: newTokenDetails.authToken,
+                                userDetails: tokenDetails.userDetails
+                            }
+                            resolve(responseBody)
+                        }
+                    })
+                } else {
+                    retrievedTokenDetails.authToken = tokenDetails.token
+                    retrievedTokenDetails.tokenSecret = tokenDetails.tokenSecret
+                    retrievedTokenDetails.tokenGenerationTime = time.now()
+                    retrievedTokenDetails.save((err, newTokenDetails) => {
+                        if (err) {
+                            console.log(err)
+                            logger.error(err.message, 'userController: saveToken', 10)
+                            let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
+                            reject(apiResponse)
+                        } else {
+                            let responseBody = {
+                                authToken: newTokenDetails.authToken,
+                                userDetails: tokenDetails.userDetails
+                            }
+                            resolve(responseBody)
+                        }
+                    })
+                }
+            })
+        })
+    }//end of save Token
+
+    findUser(req,res)
+        .then(removeAuthToken)
+        .then(generateToken)
+        .then(saveToken)
+        .then((resolve) => {
+            console.log('details at line no - 424',resolve)
+            //send email to the user with the reset link
+            let emailMessage = `Dear ${resolve.userDetails.firstName},
+            Please follow below link to reset your password.
+            <a href= "http://localhost:4200/reset/${resolve.userDetails.userId}/${resolve.authToken}"> Password Reset</a>
+            Thanks,
+            Meeting Planner.`
+            emailLib.sendEmail(`${resolve.userDetails.email}`,emailMessage)
+            let apiResponse = response.generate(false, 'Email Sent Successfully', 200, resolve)
+            
+            res.send(apiResponse)
+        })
+        .catch((err) => {
+           
+            console.log(err);
+            let apiResponse = response.generate(true, 'Error generating password link', 500, resolve)
+            
+            res.send(apiResponse)
+        })
 }// end reset Password
 
 /**
