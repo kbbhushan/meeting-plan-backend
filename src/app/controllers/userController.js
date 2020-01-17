@@ -158,7 +158,7 @@ let loginFunction = (req, res) => {
                         /* generate the error message and the api response message here */
                         let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
                         reject(apiResponse)
-                        /* if Company Details is not found */
+                        /* if User Details is not found */
                     } else if (check.isEmpty(userDetails)) {
                         /* generate the response and the console error message here */
                         logger.error('No User Found', 'userController: findUser()', 7)
@@ -292,6 +292,61 @@ let loginFunction = (req, res) => {
 
 // end of the login function 
 
+let resetPassword = (req, res) => {
+    let findUser = () => {
+        console.log("findUser");
+        return new Promise((resolve, reject) => {
+            if (req.body.userName) {
+                
+                UserModel.findOne({ userName: req.body.userName}, (err, userDetails) => {
+                    /* handle the error here if the User is not found */
+                    if (err) {
+                        console.log(err)
+                        logger.error('Failed To Retrieve User Data', 'userController: findUser()', 10)
+                        /* generate the error message and the api response message here */
+                        let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
+                        reject(apiResponse)
+                        /* if User Details is not found */
+                    } else if (check.isEmpty(userDetails)) {
+                        /* generate the response and the console error message here */
+                        logger.error('No User Found', 'userController: findUser()', 7)
+                        let apiResponse = response.generate(true, 'No User Details Found', 404, null)
+                        reject(apiResponse)
+                    } else {
+                        /* prepare the message and the api response here */
+                        logger.info('User Found', 'userController: findUser()', 10)
+                        resolve(userDetails)
+                    }
+                });
+               
+            } else {
+                let apiResponse = response.generate(true, '"userName" parameter is missing', 400, null)
+                reject(apiResponse)
+            }
+        })
+    }//end of findUser()
+
+    let removeAuthToken = (userDetails) => {
+        return new Promise((resolve, reject) => {
+        AuthModel.findOneAndRemove({userId: req.user.userId}, (err, result) => {
+            if (err) {
+                console.log(err)
+                logger.error(err.message, 'user Controller: logout', 10)
+                let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+                reject(apiResponse)
+            } else if (check.isEmpty(result)) {
+               
+                resolve(userDetails)
+            } else {
+                
+                resolve(userDetails)
+            }
+          })
+        })//end of Promise
+
+    }//end of removeAuthToken
+    res.send();
+}// end reset Password
 
 /**
  * function to logout user.
@@ -321,6 +376,7 @@ module.exports = {
     getAllUser: getAllUser,
     getSingleUser: getSingleUser,
     loginFunction: loginFunction,
-    logout: logout
+    logout: logout,
+    resetPassword:resetPassword
 
 }// end exports
