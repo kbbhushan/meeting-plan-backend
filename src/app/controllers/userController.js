@@ -173,7 +173,7 @@ let loginFunction = (req, res) => {
                 });
                
             } else {
-                let apiResponse = response.generate(true, '"email" parameter is missing', 400, null)
+                let apiResponse = response.generate(true, '"UserName" parameter is missing', 400, null)
                 reject(apiResponse)
             }
         })
@@ -284,7 +284,6 @@ let loginFunction = (req, res) => {
         .catch((err) => {
             console.log("errorhandler");
             console.log(err);
-            res.status(err.status)
             res.send(err)
         })
 }
@@ -436,11 +435,105 @@ let resetPassword = (req, res) => {
         .catch((err) => {
            
             console.log(err);
-            let apiResponse = response.generate(true, 'Error generating password link', 500, resolve)
-            
-            res.send(apiResponse)
+                     
+            res.send(err)
         })
 }// end reset Password
+
+let updatePassword = (req, res) => {
+
+    let validatePassword = () => {
+        return new Promise((resolve, reject) => {
+             if (check.isEmpty(req.body.password)) {
+                    let apiResponse = response.generate(true, '"password" parameter is missing"', 400, null)
+                    reject(apiResponse)
+                } else {
+                    resolve(req)
+                }
+            })
+        
+    }// end validate user input
+    let confirmAuthToken = () => {
+        return new Promise((resolve, reject)=>{
+        AuthModel.findOne({userId: req.body.userId, authToken : req.body.authToken}, (err, result) => {
+        if (err) {
+            console.log(err)
+            logger.error(err.message, 'user Controller: update Password', 10)
+            let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+            reject(apiResponse)
+        } else if (check.isEmpty(result)) {
+            let apiResponse = response.generate(true, 'Password Link Is Not Valid', 404, null)
+            reject(apiResponse)
+        } else {
+            resolve(req)
+        }
+        })
+
+        })
+    }//end of confirm Auth Token
+
+    let updatePasswordInDB = () => {
+        return new Promise ( (resolve, reject ) => {
+            
+            console.log('req body is ', req.body)
+            let options = {'password': passwordLib.hashpassword(req.body.password)}
+       UserModel.updateOne({'userId':req.body.userId }, options).exec((err, result)=>{
+        if (err) {
+            console.log(err)
+            logger.error(err.message, 'User Controller : updatePasswordInDB', 10)
+            let apiResponse = response.generate(true, 'Failed To update password', 500, null)
+            reject(apiResponse)
+        } else if (check.isEmpty(result)) {
+            logger.info('No User Found', 'User Controller : updatePasswordInDB')
+            let apiResponse = response.generate(true, 'No User Found', 404, null)
+            reject(apiResponse)
+        } else {
+            console.log('inside updatepassword in db',result)
+            let apiResponse = response.generate(false, 'Password updated', 200, result)
+            
+            resolve(apiResponse)
+        }
+
+        })//end of exec
+       
+    })//end of Promise
+    
+    }//end of UpdatePasswordInDB
+
+    let removeAuthToken = () => {
+        return new Promise((resolve, reject) => {
+        AuthModel.findOneAndRemove({userId: req.body.userId}, (err, result) => {
+            if (err) {
+                console.log(err)
+                logger.error(err.message, 'user Controller: logout', 10)
+                let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+                reject(apiResponse)
+            } else {
+                let apiResponse = response.generate(false, 'Password Updated Successfully', 200, null)
+                resolve(apiResponse)
+            }
+          })
+        })//end of Promise
+
+    }//end of removeAuthToken
+
+    validatePassword(req,res)
+        .then(confirmAuthToken)
+        .then(updatePasswordInDB)
+        .then(removeAuthToken)
+        .then((resolve)=>{
+
+            res.send(resolve)
+        }).catch((err)=>{
+            console.log(err)
+           
+            res.send(err)
+        })
+
+    
+         
+}//end of update Password
+
 
 /**
  * function to logout user.
@@ -471,6 +564,7 @@ module.exports = {
     getSingleUser: getSingleUser,
     loginFunction: loginFunction,
     logout: logout,
-    resetPassword:resetPassword
+    resetPassword:resetPassword,
+    updatePassword : updatePassword
 
 }// end exports
