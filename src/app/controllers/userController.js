@@ -116,7 +116,7 @@ let signUpFunction = (req, res) => {
                             firstName: req.body.firstName,
                             lastName: req.body.lastName || '',
                             email: req.body.email.toLowerCase(),
-                            mobileNumber: req.body.mobileNumber,
+                            mobileNumber: req.body.mobile,
                             password: passwordLib.hashpassword(req.body.password),
                             createdOn: time.now()
                         })
