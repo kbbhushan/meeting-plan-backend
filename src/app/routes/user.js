@@ -25,7 +25,7 @@ module.exports.setRouter = (app) => {
 
    
     
-    app.post(`${baseUrl}/signup`, createMeetingLimiter,userController.signUpFunction);
+    app.post(`${baseUrl}/signup`,userController.signUpFunction);
     /**
      * @apiGroup users
      * @apiVersion  1.0.0
