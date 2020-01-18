@@ -96,8 +96,9 @@ let createMeeting = (req, res) => {
                             startTime: req.body.startTime,
                             endTime: req.body.endTime,
                             meetingDay: req.body.meetingDay,
-                            where: req.body.where,
+                            location: req.body.where,
                             purpose: req.body.purpose,
+                            createdBy:req.body.createdBy,
                             createdOn: time.now()
                         })
                         newMeeting.save((err, newMeeting) => {
@@ -107,14 +108,6 @@ let createMeeting = (req, res) => {
                                 let apiResponse = response.generate(true, 'Failed to create new Meeting', 500, null)
                                 reject(apiResponse)
                             } else {
-                                socket.emitMeetingUpdate('A meeting is created by Admin');
-                                setTimeout(()=>{
-                                    email.sendEmail(`Hi,
-                                    New Meeting is created on ${req.body.meetingDay} from ${req.body.startTime} to ${req.body.endTime}.
-                                    Thanks,
-                                    Meeting Planner.
-                                    `);
-                                }, 1000)
                                 let newMeetingObj = newMeeting.toObject();
                                 resolve(newMeetingObj)
                             }
@@ -127,7 +120,17 @@ let createMeeting = (req, res) => {
     createMeeting(req, res)
         .then((resolve) => {
            
-            let apiResponse = response.generate(false, 'Meeting created', 200, resolve)
+            let apiResponse = response.generate(false, 'Meeting created', 200, resolve);
+            setTimeout(()=>{
+                email.sendEmail(`Hi,
+                A new meeting with Agenda ${req.body.purpose} 
+                on ${req.body.meetingDay} is created.
+                Please check your calendar.
+
+                Thanks,
+                Meeting Planner.
+                `);
+            }, 1000)
             res.send(apiResponse)
         })
         .catch((err) => {
@@ -186,10 +189,13 @@ let deleteMeeting= (req, res) => {
                     reject(apiResponse)
                 } else {
                     let apiResponse = response.generate(false, 'Deleted the meeting successfully', 200, result)
-                    socket.emitMeetingUpdate('A meeting is deleted by Admin');
+                    
                                         setTimeout(()=>{
                                             email.sendEmail(`Hi,
-                                            A meeting is deleted by Admin.
+                                            The meeting with Agenda ${req.body.purpose} 
+                                            on ${req.body.meetingDay} is cancelled.
+                                            Please check your calendar.
+                                            
                                             Thanks,
                                             Meeting Planner.
                                             `);
@@ -226,10 +232,13 @@ let editMeeting = (req, res) => {
                     reject(apiResponse)
                 } else {
                     let apiResponse = response.generate(false, 'Meeting details edited', 200, result)
-                    socket.emitMeetingUpdate('A meeting is changed by Admin');
+                    
                                         setTimeout(()=>{
                                             email.sendEmail(`Hi,
-                                            A meeting is changed by Admin.
+                                            The meeting with Agenda ${req.body.purpose} 
+                                            on ${req.body.meetingDay} is updated.
+                                            Please check your calendar.
+                                            
                                             Thanks,
                                             Meeting Planner.
                                             `);

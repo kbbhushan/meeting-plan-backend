@@ -15,15 +15,13 @@ const response = require('./responseLib')
 
 const redisLib = require("./redisLib.js");
 
-    let io =null;
-    let socket = null;
-    let myIo =null;
+    
 
 let setServer = (server) => {
-    io = socketio.listen(server);
-    myIo = io.of('/')
+   let  io = socketio.listen(server);
+    let myIo = io.of('/')
     myIo.on('connection', (socket) => {
-        this.socket = socket;
+       
         console.log("on connection--emitting verify user");
 
         socket.emit("verifyUser", "");
@@ -51,6 +49,7 @@ let setServer = (server) => {
                         } else {
                             // getting online users list.
                             console.log(`${value} added to online user list`);
+
                         }
                     })
                 }
@@ -63,42 +62,30 @@ let setServer = (server) => {
             // disconnect the user from socket
             // remove the user from online list
             // unsubscribe the user from his own channel
-
-            console.log("user is disconnected");
-            // console.log(socket.connectorName);
-            console.log(socket.userId);
-
-
-            // var removeIndex = allOnlineUsers.map(function (user) { return user.userId; }).indexOf(socket.userId);
-            // allOnlineUsers.splice(removeIndex, 1)
-            // console.log(allOnlineUsers)
-            
-            if (socket.userId) {
+             if (socket.userId) {
                 redisLib.deleteUserFromHash('onlineUsers', socket.userId)
                 redisLib.getAllUsersInAHash('onlineUsers', (err, result) => {
                     if (err) {
                         console.log(err)
                     } else {
                         socket.leave(socket.room)
-                        socket.to(socket.room).broadcast.emit('online-user-list', result);
-
-
+                        
                     }
                 })
             }
         }) // end of on disconnect
 
+        socket.on('meetingupdate',(data)=> {
+
+            socket.broadcast.emit('meetingupdate', data);
+        })
 
     });
+
  
 }
 
-let emitMeetingUpdate = (data) => {
-    console.log('meeting update event emitted');
-    this.socket.broadcast.emit('meetingupdate', data);
-}
 
 module.exports = {
-    setServer: setServer,
-    emitMeetingUpdate:emitMeetingUpdate
+    setServer: setServer
 }

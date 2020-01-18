@@ -14,7 +14,7 @@ let isAuthorized = (req, res, next) => {
   if (req.params.authToken || req.query.authToken || req.body.authToken || req.header('authToken')) {
     Auth.findOne({authToken: req.header('authToken') || req.params.authToken || req.body.authToken || req.query.authToken}, (err, authDetails) => {
       if (err) {
-        console.log(err)
+       
         logger.error(err.message, 'AuthorizationMiddleware', 10)
         let apiResponse = responseLib.generate(true, 'Failed To Authorized', 500, null)
         res.send(apiResponse)
@@ -34,7 +34,7 @@ let isAuthorized = (req, res, next) => {
                 
                 req.user = {userId: decoded.data.userId,
                 userName:decoded.data.userName}
-                console.log('decoded data in auth js',decoded)
+                
                 next()
             }
 
