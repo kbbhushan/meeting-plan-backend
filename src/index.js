@@ -12,6 +12,7 @@ const globalErrorMiddleware = require('./app/middlewares/appErrorHandler');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 
+app.set('trust proxy' , 1);
 
 app.use(morgan('dev'));
 
