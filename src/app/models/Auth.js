@@ -2,6 +2,9 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const time = require('../libs/timeLib')
 
+/**
+ * Auth schema to store token details
+ */
 const Auth = new Schema({
   userId: {
     type: String

@@ -5,6 +5,9 @@
 const mongoose = require('mongoose'),
   Schema = mongoose.Schema;
 
+/**
+ * User Schema to store user details.
+ */
 let userSchema = new Schema({
   userId: {
     type: String,
@@ -15,7 +18,7 @@ let userSchema = new Schema({
   userName: {
     type: String,
     unique: true,
-    required:true
+    required: true
   },
   firstName: {
     type: String,
@@ -37,13 +40,10 @@ let userSchema = new Schema({
     type: Number,
     default: 0
   },
-  createdOn :{
-    type:Date,
-    default:""
+  createdOn: {
+    type: Date,
+    default: ""
   }
-
-
 })
-
 
 mongoose.model('User', userSchema);

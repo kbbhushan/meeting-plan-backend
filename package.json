@@ -9,6 +9,7 @@
   "author": "Bharath Bhushan",
   "license": "ISC",
   "dependencies": {
+    "apidoc": "^0.19.1",
     "bcrypt": "^3.0.7",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",

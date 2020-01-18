@@ -18,41 +18,42 @@ const UserModel = mongoose.model('User')
 let getAllUser = (req, res) => {
 
     let getAllUser = () => {
-        return new Promise ((resolve, reject )=>{
-            if(!(/.*-admin$/.test(req.user.userName))){
+        return new Promise((resolve, reject) => {
+            if (!(/.*-admin$/.test(req.user.userName))) {
                 logger.info('UnAuthorised Access', 'User Controller: getAllUser')
                 let apiResponse = response.generate(true, 'UnAuthorised Access', 500, null)
                 reject(apiResponse)
             }
-            else{
-            UserModel.find()
-                .select(' -__v -_id')
-                .lean()
-                .exec((err, result) => {
-                    if (err) {
-                        console.log(err)
-                        logger.error(err.message, 'User Controller: getAllUser', 10)
-                        let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-                        res.send(apiResponse)
-                    } else if (check.isEmpty(result)) {
-                        logger.info('No User Found', 'User Controller: getAllUser')
-                        let apiResponse = response.generate(false, 'No Users Signed Up', 404, null)
-                        reject(apiResponse)
-                    } else {
-                        let apiResponse = response.generate(false, 'All users found', 200, result)
-                        resolve(apiResponse)
-                    }
-                })
+            else {
+                UserModel.find()
+                    .select(' -__v -_id')
+                    .lean()
+                    .exec((err, result) => {
+                        if (err) {
+                            console.log(err)
+                            logger.error(err.message, 'User Controller: getAllUser', 10)
+                            let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
+                            res.send(apiResponse)
+                        } else if (check.isEmpty(result)) {
+                            logger.info('No User Found', 'User Controller: getAllUser')
+                            let apiResponse = response.generate(false, 'No Users Signed Up', 404, null)
+                            reject(apiResponse)
+                        } else {
+                            let apiResponse = response.generate(false, 'All users found', 200, result)
+                            resolve(apiResponse)
+                        }
+                    })
             }
 
         })//end of Promise
     }
 
-    getAllUser(req, res).then((apiResponse)=>{
-                        res.send(apiResponse)
-                })
-                .catch(err=>{res.send(err)})
-    
+    getAllUser(req, res).then((apiResponse) => {
+       // console.log(apiResponse)
+        res.send(apiResponse)
+    })
+        .catch(err => { res.send(err) })
+
 }// end get all users
 
 /* Get single user details */
@@ -78,6 +79,13 @@ let getSingleUser = (req, res) => {
 }// end get single user
 
 
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * 
+ * Sign Up function to create a new user.
+ */
 let signUpFunction = (req, res) => {
 
     let validateUserInput = () => {
@@ -100,7 +108,7 @@ let signUpFunction = (req, res) => {
         })
     }// end validate user input
     let createUser = () => {
-        console.log('In create user fn',req.body);
+        
         return new Promise((resolve, reject) => {
             UserModel.findOne({ userName: req.body.userName })
                 .exec((err, retrievedUserDetails) => {
@@ -109,7 +117,7 @@ let signUpFunction = (req, res) => {
                         let apiResponse = response.generate(true, 'Failed To Create User', 500, null)
                         reject(apiResponse)
                     } else if (check.isEmpty(retrievedUserDetails)) {
-                        console.log(req.body)
+                        
                         let newUser = new UserModel({
                             userId: shortid.generate(),
                             userName: req.body.userName.toLowerCase(),
@@ -122,7 +130,7 @@ let signUpFunction = (req, res) => {
                         })
                         newUser.save((err, newUser) => {
                             if (err) {
-                                console.log(err)
+                                
                                 logger.error(err.message, 'userController: createUser', 10)
                                 let apiResponse = response.generate(true, 'Failed to create new User', 500, null)
                                 reject(apiResponse)
@@ -146,6 +154,7 @@ let signUpFunction = (req, res) => {
         .then((resolve) => {
             delete resolve.password
             let apiResponse = response.generate(false, 'User created', 200, resolve)
+           // console.log(apiResponse)
             res.send(apiResponse)
         })
         .catch((err) => {
@@ -158,12 +167,12 @@ let signUpFunction = (req, res) => {
 // start of login function 
 let loginFunction = (req, res) => {
     let findUser = () => {
-        console.log("findUser");
+        
         return new Promise((resolve, reject) => {
             if (req.body.userName) {
-                console.log("req body userName is there");
-                console.log(req.body);
-                UserModel.findOne({ userName: req.body.userName}, (err, userDetails) => {
+                
+                
+                UserModel.findOne({ userName: req.body.userName }, (err, userDetails) => {
                     /* handle the error here if the User is not found */
                     if (err) {
                         console.log(err)
@@ -183,7 +192,7 @@ let loginFunction = (req, res) => {
                         resolve(userDetails)
                     }
                 });
-               
+
             } else {
                 let apiResponse = response.generate(true, '"UserName" parameter is missing', 400, null)
                 reject(apiResponse)
@@ -191,11 +200,11 @@ let loginFunction = (req, res) => {
         })
     }
     let validatePassword = (retrievedUserDetails) => {
-        console.log("validatePassword");
+        
         return new Promise((resolve, reject) => {
             passwordLib.comparePassword(req.body.password, retrievedUserDetails.password, (err, isMatch) => {
                 if (err) {
-                    console.log(err)
+                    
                     logger.error(err.message, 'userController: validatePassword()', 10)
                     let apiResponse = response.generate(true, 'Login Failed', 500, null)
                     reject(apiResponse)
@@ -217,7 +226,7 @@ let loginFunction = (req, res) => {
     }
 
     let generateToken = (userDetails) => {
-        console.log("generate token");
+        
         return new Promise((resolve, reject) => {
             token.generateToken(userDetails, (err, tokenDetails) => {
                 if (err) {
@@ -233,11 +242,11 @@ let loginFunction = (req, res) => {
         })
     }
     let saveToken = (tokenDetails) => {
-        console.log("save token");
+       
         return new Promise((resolve, reject) => {
             AuthModel.findOne({ userId: tokenDetails.userId }, (err, retrievedTokenDetails) => {
                 if (err) {
-                    console.log(err.message, 'userController: saveToken', 10)
+                    logger.err(err.message, 'userController: saveToken', 10)
                     let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
                     reject(apiResponse)
                 } else if (check.isEmpty(retrievedTokenDetails)) {
@@ -249,7 +258,7 @@ let loginFunction = (req, res) => {
                     })
                     newAuthToken.save((err, newTokenDetails) => {
                         if (err) {
-                            console.log(err)
+                           
                             logger.error(err.message, 'userController: saveToken', 10)
                             let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
                             reject(apiResponse)
@@ -267,7 +276,7 @@ let loginFunction = (req, res) => {
                     retrievedTokenDetails.tokenGenerationTime = time.now()
                     retrievedTokenDetails.save((err, newTokenDetails) => {
                         if (err) {
-                            console.log(err)
+                           
                             logger.error(err.message, 'userController: saveToken', 10)
                             let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
                             reject(apiResponse)
@@ -284,13 +293,13 @@ let loginFunction = (req, res) => {
         })
     }
 
-    findUser(req,res)
+    findUser(req, res)
         .then(validatePassword)
         .then(generateToken)
         .then(saveToken)
         .then((resolve) => {
             let apiResponse = response.generate(false, 'Login Successful', 200, resolve)
-            res.status(200)
+           // console.log(apiResponse)
             res.send(apiResponse)
         })
         .catch((err) => {
@@ -306,11 +315,11 @@ let loginFunction = (req, res) => {
 
 let resetPassword = (req, res) => {
     let findUser = () => {
-        console.log("findUser");
+       
         return new Promise((resolve, reject) => {
             if (req.body.userName) {
-                
-                UserModel.findOne({ userName: req.body.userName}, (err, userDetails) => {
+
+                UserModel.findOne({ userName: req.body.userName }, (err, userDetails) => {
                     /* handle the error here if the User is not found */
                     if (err) {
                         console.log(err)
@@ -327,10 +336,11 @@ let resetPassword = (req, res) => {
                     } else {
                         /* prepare the message and the api response here */
                         logger.info('User Found', 'userController: findUser()', 10)
+                        delete userDetails.password;
                         resolve(userDetails)
                     }
                 });
-               
+
             } else {
                 let apiResponse = response.generate(true, '"userName" parameter is missing', 400, null)
                 reject(apiResponse)
@@ -340,26 +350,26 @@ let resetPassword = (req, res) => {
 
     let removeAuthToken = (userDetails) => {
         return new Promise((resolve, reject) => {
-        AuthModel.findOneAndRemove({userId: userDetails.userId}, (err, result) => {
-            if (err) {
-                console.log(err)
-                logger.error(err.message, 'user Controller: logout', 10)
-                let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
-                reject(apiResponse)
-            } else if (check.isEmpty(result)) {
-               
-                resolve(userDetails)
-            } else {
-                
-                resolve(userDetails)
-            }
-          })
+            AuthModel.findOneAndRemove({ userId: userDetails.userId }, (err, result) => {
+                if (err) {
+                   
+                    logger.error(err.message, 'user Controller: logout', 10)
+                    let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+                    reject(apiResponse)
+                } else if (check.isEmpty(result)) {
+
+                    resolve(userDetails)
+                } else {
+
+                    resolve(userDetails)
+                }
+            })
         })//end of Promise
 
     }//end of removeAuthToken
-    
+
     let generateToken = (userDetails) => {
-        console.log("generate token");
+       
         return new Promise((resolve, reject) => {
             token.generateToken(userDetails, (err, tokenDetails) => {
                 if (err) {
@@ -376,11 +386,11 @@ let resetPassword = (req, res) => {
     }//end of generate Token
 
     let saveToken = (tokenDetails) => {
-        console.log("save token");
+        
         return new Promise((resolve, reject) => {
             AuthModel.findOne({ userId: tokenDetails.userId }, (err, retrievedTokenDetails) => {
                 if (err) {
-                    console.log(err.message, 'userController: saveToken', 10)
+                    logger.err(err.message, 'userController: saveToken', 10)
                     let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
                     reject(apiResponse)
                 } else if (check.isEmpty(retrievedTokenDetails)) {
@@ -392,7 +402,7 @@ let resetPassword = (req, res) => {
                     })
                     newAuthToken.save((err, newTokenDetails) => {
                         if (err) {
-                            console.log(err)
+                            
                             logger.error(err.message, 'userController: saveToken', 10)
                             let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
                             reject(apiResponse)
@@ -410,7 +420,7 @@ let resetPassword = (req, res) => {
                     retrievedTokenDetails.tokenGenerationTime = time.now()
                     retrievedTokenDetails.save((err, newTokenDetails) => {
                         if (err) {
-                            console.log(err)
+                         
                             logger.error(err.message, 'userController: saveToken', 10)
                             let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
                             reject(apiResponse)
@@ -427,12 +437,12 @@ let resetPassword = (req, res) => {
         })
     }//end of save Token
 
-    findUser(req,res)
+    findUser(req, res)
         .then(removeAuthToken)
         .then(generateToken)
         .then(saveToken)
         .then((resolve) => {
-            console.log('details at line no - 424',resolve)
+            delete resolve.userDetails["password"]
             //send email to the user with the reset link
             let emailMessage = `<p>Dear ${resolve.userDetails.firstName},</p><br>
             <p>Please click on below link to reset your password.</p><br>
@@ -440,15 +450,15 @@ let resetPassword = (req, res) => {
             <br>
             <p>Thanks,</p>
             <p>Meeting Planner.</p>`
-            emailLib.sendEmail(`${resolve.userDetails.email}`,emailMessage)
+            emailLib.sendEmail(`${resolve.userDetails.email}`, emailMessage)
             let apiResponse = response.generate(false, 'Email Sent Successfully', 200, resolve)
-            
+           // console.log(apiResponse)
             res.send(apiResponse)
         })
         .catch((err) => {
-           
+
             console.log(err);
-                     
+
             res.send(err)
         })
 }// end reset Password
@@ -457,94 +467,91 @@ let updatePassword = (req, res) => {
 
     let validatePassword = () => {
         return new Promise((resolve, reject) => {
-             if (check.isEmpty(req.body.password)) {
-                    let apiResponse = response.generate(true, '"password" parameter is missing"', 400, null)
+            if (check.isEmpty(req.body.password)) {
+                let apiResponse = response.generate(true, '"password" parameter is missing"', 400, null)
+                reject(apiResponse)
+            } else {
+                resolve(req)
+            }
+        })
+
+    }// end validate user input
+    let confirmAuthToken = () => {
+        return new Promise((resolve, reject) => {
+            AuthModel.findOne({ userId: req.body.userId, authToken: req.body.authToken }, (err, result) => {
+                if (err) {
+                    console.log(err)
+                    logger.error(err.message, 'user Controller: update Password', 10)
+                    let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+                    reject(apiResponse)
+                } else if (check.isEmpty(result)) {
+                    let apiResponse = response.generate(true, 'Password Link Is Not Valid', 404, null)
                     reject(apiResponse)
                 } else {
                     resolve(req)
                 }
             })
-        
-    }// end validate user input
-    let confirmAuthToken = () => {
-        return new Promise((resolve, reject)=>{
-        AuthModel.findOne({userId: req.body.userId, authToken : req.body.authToken}, (err, result) => {
-        if (err) {
-            console.log(err)
-            logger.error(err.message, 'user Controller: update Password', 10)
-            let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
-            reject(apiResponse)
-        } else if (check.isEmpty(result)) {
-            let apiResponse = response.generate(true, 'Password Link Is Not Valid', 404, null)
-            reject(apiResponse)
-        } else {
-            resolve(req)
-        }
-        })
 
         })
     }//end of confirm Auth Token
 
     let updatePasswordInDB = () => {
-        return new Promise ( (resolve, reject ) => {
-            
-            console.log('req body is ', req.body)
-            let options = {'password': passwordLib.hashpassword(req.body.password)}
-       UserModel.updateOne({'userId':req.body.userId }, options).exec((err, result)=>{
-        if (err) {
-            console.log(err)
-            logger.error(err.message, 'User Controller : updatePasswordInDB', 10)
-            let apiResponse = response.generate(true, 'Failed To update password', 500, null)
-            reject(apiResponse)
-        } else if (check.isEmpty(result)) {
-            logger.info('No User Found', 'User Controller : updatePasswordInDB')
-            let apiResponse = response.generate(true, 'No User Found', 404, null)
-            reject(apiResponse)
-        } else {
-            console.log('inside updatepassword in db',result)
-            let apiResponse = response.generate(false, 'Password updated', 200, result)
-            
-            resolve(apiResponse)
-        }
+        return new Promise((resolve, reject) => {
 
-        })//end of exec
-       
-    })//end of Promise
-    
+            let options = { 'password': passwordLib.hashpassword(req.body.password) }
+            UserModel.updateOne({ 'userId': req.body.userId }, options).exec((err, result) => {
+                if (err) {
+                   
+                    logger.error(err.message, 'User Controller : updatePasswordInDB', 10)
+                    let apiResponse = response.generate(true, 'Failed To update password', 500, null)
+                    reject(apiResponse)
+                } else if (check.isEmpty(result)) {
+                    logger.info('No User Found', 'User Controller : updatePasswordInDB')
+                    let apiResponse = response.generate(true, 'No User Found', 404, null)
+                    reject(apiResponse)
+                } else {
+                    let apiResponse = response.generate(false, 'Password updated', 200, result)
+                    resolve(apiResponse)
+                }
+
+            })//end of exec
+
+        })//end of Promise
+
     }//end of UpdatePasswordInDB
 
     let removeAuthToken = () => {
         return new Promise((resolve, reject) => {
-        AuthModel.findOneAndRemove({userId: req.body.userId}, (err, result) => {
-            if (err) {
-                console.log(err)
-                logger.error(err.message, 'user Controller: logout', 10)
-                let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
-                reject(apiResponse)
-            } else {
-                let apiResponse = response.generate(false, 'Password Updated Successfully', 200, null)
-                resolve(apiResponse)
-            }
-          })
+            AuthModel.findOneAndRemove({ userId: req.body.userId }, (err, result) => {
+                if (err) {
+                    console.log(err)
+                    logger.error(err.message, 'user Controller: logout', 10)
+                    let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+                    reject(apiResponse)
+                } else {
+                    let apiResponse = response.generate(false, 'Password Updated Successfully', 200, null)
+                    resolve(apiResponse)
+                }
+            })
         })//end of Promise
 
     }//end of removeAuthToken
 
-    validatePassword(req,res)
+    validatePassword(req, res)
         .then(confirmAuthToken)
         .then(updatePasswordInDB)
         .then(removeAuthToken)
-        .then((resolve)=>{
-
+        .then((resolve) => {
+        //    console.log(resolve)
             res.send(resolve)
-        }).catch((err)=>{
+        }).catch((err) => {
             console.log(err)
-           
+
             res.send(err)
         })
 
-    
-         
+
+
 }//end of update Password
 
 
@@ -554,11 +561,11 @@ let updatePassword = (req, res) => {
  */
 let logout = (req, res) => {
 
-    let logout =() => {
-        return new Promise ((resolve, reject)=>{
-            AuthModel.findOneAndRemove({userId: req.user.userId}, (err, result) => {
+    let logout = () => {
+        return new Promise((resolve, reject) => {
+            AuthModel.findOneAndRemove({ userId: req.user.userId }, (err, result) => {
                 if (err) {
-                    
+
                     logger.error(err.message, 'user Controller: logout', 10)
                     let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
                     reject(apiResponse)
@@ -569,17 +576,18 @@ let logout = (req, res) => {
                     let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
                     resolve(apiResponse)
                 }
-              })
+            })
         })//end of Promise
     }//end of logout local
 
-    logout(req, res).then((apiResponse)=>{
+    logout(req, res).then((apiResponse) => {
+       // console.log(apiResponse)
         res.send(apiResponse)
-    }).catch((err)=>{
-        
+    }).catch((err) => {
+
         res.send(err)
     })
-  
+
 } // end of the logout function.
 
 
@@ -590,7 +598,7 @@ module.exports = {
     getSingleUser: getSingleUser,
     loginFunction: loginFunction,
     logout: logout,
-    resetPassword:resetPassword,
-    updatePassword : updatePassword
+    resetPassword: resetPassword,
+    updatePassword: updatePassword
 
 }// end exports

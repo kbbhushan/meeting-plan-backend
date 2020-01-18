@@ -2,30 +2,20 @@
  * modules dependencies.
  */
 const socketio = require('socket.io');
-const mongoose = require('mongoose');
-const shortid = require('shortid');
-const logger = require('./loggerLib.js');
-const events = require('events');
-const eventEmitter = new events.EventEmitter();
-
 const tokenLib = require("./tokenLib.js");
-const check = require("./checkLib.js");
-const response = require('./responseLib')
-
-
 const redisLib = require("./redisLib.js");
 
-    
+
 
 let setServer = (server) => {
-   let  io = socketio.listen(server);
+    let io = socketio.listen(server);
     let myIo = io.of('/')
     myIo.on('connection', (socket) => {
-       
+
         console.log("on connection--emitting verify user");
 
         socket.emit("verifyUser", "");
-        
+
         socket.on('set-user', (authToken) => {
 
             console.log("set-user called")
@@ -53,7 +43,7 @@ let setServer = (server) => {
                         }
                     })
                 }
-        })
+            })
 
         }) // end of listening set-user event
 
@@ -62,29 +52,29 @@ let setServer = (server) => {
             // disconnect the user from socket
             // remove the user from online list
             // unsubscribe the user from his own channel
-             if (socket.userId) {
+            if (socket.userId) {
                 redisLib.deleteUserFromHash('onlineUsers', socket.userId)
                 redisLib.getAllUsersInAHash('onlineUsers', (err, result) => {
                     if (err) {
                         console.log(err)
                     } else {
                         socket.leave(socket.room)
-                        
+
                     }
                 })
             }
         }) // end of on disconnect
 
-        socket.on('meetingupdate',(data)=> {
+        /**
+         * Any updates on meetings by Admin are received here, which in turn will emit
+         * to all users.
+         */
+        socket.on('meetingupdate', (data) => {
 
             socket.broadcast.emit('meetingupdate', data);
         })
-
     });
-
- 
 }
-
 
 module.exports = {
     setServer: setServer
