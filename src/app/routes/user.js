@@ -3,11 +3,11 @@ const router = express.Router();
 const userController = require("./../../app/controllers/userController");
 const appConfig = require("./../../config/appConfig")
 const auth = require('./../middlewares/auth')
-const rateLimit = require('express-rate-limit')
+//const rateLimit = require('express-rate-limit')
 
 module.exports.setRouter = (app) => {
 
-    const createMeetingLimiter = rateLimit({
+   /*  const createMeetingLimiter = rateLimit({
         windowMs: 60 * 60 * 1000, // 1 hour window
         max: 60, // start blocking after 60 requests
         message:
@@ -19,7 +19,7 @@ module.exports.setRouter = (app) => {
         max: 4, // start blocking after 60 requests
         message:
           "Too many requests created from this IP, please try again after an hour"
-    });
+    }); */
 
     let baseUrl = `${appConfig.apiVersion}/users`;
 
@@ -58,7 +58,8 @@ module.exports.setRouter = (app) => {
      *   }
     */
     
-    app.post(`${baseUrl}/login`, createMeetingLimiter,userController.loginFunction);
+    //app.post(`${baseUrl}/login`, createMeetingLimiter,userController.loginFunction);
+    app.post(`${baseUrl}/login`,userController.loginFunction);
     /**
      * @apiGroup users
      * @apiVersion  1.0.0
@@ -109,7 +110,7 @@ module.exports.setRouter = (app) => {
      *
     */
     
-    app.get(`${baseUrl}/userslist`,createMeetingLimiter,auth.isAuthorized, userController.getAllUser );
+    app.get(`${baseUrl}/userslist`,auth.isAuthorized, userController.getAllUser );
     /**
      * @apiGroup users
      * @apiVersion  1.0.0
@@ -149,7 +150,7 @@ module.exports.setRouter = (app) => {
      *   }
      *
     */
-    app.post(`${baseUrl}/password-reset`,createPasswordLimiter, userController.resetPassword );
+    app.post(`${baseUrl}/password-reset`, userController.resetPassword );
     /**
      * @apiGroup users
      * @apiVersion  1.0.0
@@ -182,7 +183,7 @@ module.exports.setRouter = (app) => {
      *   }
      *
     */
-    app.post(`${baseUrl}/updatePassword`,createPasswordLimiter, userController.updatePassword );
+    app.post(`${baseUrl}/updatePassword`, userController.updatePassword );
      /**
      * @apiGroup users
      * @apiVersion  1.0.0
