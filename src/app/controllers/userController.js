@@ -446,7 +446,7 @@ let resetPassword = (req, res) => {
             //send email to the user with the reset link
             let emailMessage = `<p>Dear ${resolve.userDetails.firstName},</p><br>
             <p>Please click on below link to reset your password.</p><br>
-            <a href= "http://localhost:4200/reset/${resolve.userDetails.userId}/${resolve.authToken}">Reset Password</a>
+            <a href= "http://ec2-13-234-20-77.ap-south-1.compute.amazonaws.com/reset/${resolve.userDetails.userId}/${resolve.authToken}">Reset Password</a>
             <br>
             <p>Thanks,</p>
             <p>Meeting Planner.</p>`
